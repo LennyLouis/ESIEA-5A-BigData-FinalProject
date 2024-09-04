@@ -40,6 +40,15 @@ login() {
     docker exec -it hadoop-master bash
 }
 
+deploy() {
+    start
+    echo "Deploying Java & Frontend..."
+    echo " "
+    
+    cd java
+    mvn clean package
+    docker cp target/*.jar hadoop-master:/root/wordcount-spark.jar
+}
 case "$1" in
     start)
         start
@@ -52,6 +61,9 @@ case "$1" in
         ;;
     login)
         login
+        ;;
+    deploy)
+        deploy
         ;;
     *)
         echo "Usage: $0 {start|stop|restart|login}"
