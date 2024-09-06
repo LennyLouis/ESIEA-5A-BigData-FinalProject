@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOGFILE="./logs/docker.log"
+LOGFILE="./logs/reduce-data.log"
 
 # Function to log messages with timestamp
 log_message() {
@@ -12,7 +12,22 @@ log_message() {
   # shellcheck disable=SC2155
   local log_entry="[$(date +"%Y-%m-%d %H:%M:%S")] $1"
 
-  echo "$log_entry" | tee -a $LOGFILE
+  # Use printf to ensure correct formatting and append to the log file
+  printf "%s\n" "$log_entry" | tee -a $LOGFILE
+}
+
+# Function to print error messages in red
+error_message() {
+  # Check if the log folder exists
+  if [ ! -d "$(pwd)/logs" ]; then
+    mkdir -p "$(pwd)/logs"
+  fi
+
+  # shellcheck disable=SC2155
+  local log_entry="[$(date +"%Y-%m-%d %H:%M:%S")] $1"
+
+  # Print the error message in red to the terminal and append to the log file
+  printf "\033[0;31m%s\033[0m\n" "$log_entry" | tee -a $LOGFILE
 }
 
 start() {
@@ -40,7 +55,7 @@ start() {
     if [ $? -eq 0 ]; then
         log_message "Hadoop cluster started successfully."
     else
-        log_message "Error starting Hadoop cluster. Check the log file for details."
+        error_message "Error starting Hadoop cluster. Check the log file for details."
     fi
 }
 
@@ -59,7 +74,7 @@ stop() {
     if [ $? -eq 0 ]; then
         log_message "Hadoop cluster stopped successfully."
     else
-        log_message "Error stopping Hadoop cluster. Check the log file for details."
+        error_message "Error stopping Hadoop cluster. Check the log file for details."
     fi
 }
 
@@ -71,6 +86,10 @@ restart() {
 login() {
     clear
     log_message "Logging into Hadoop master container..."
+    echo "Don't forget to start the Hadoop cluster by executing the following command:"
+    echo " "
+    echo "   ./start-hadoop.sh"
+    echo " "
     docker exec -it hadoop-master bash
 }
 
@@ -78,15 +97,21 @@ deploy() {
     start
     log_message "Deploying Java & Frontend..."
 
-    cd java
+    cd java || (error_message "Error changing directory to java. Check the log file for details. Exit." && exit 1)
     mvn clean package
-    log_message "Copying JAR file to container..."
-    docker cp target/*.jar hadoop-master:/root/wordcount-spark.jar >> $LOGFILE 2>&1
+
+    log_message "Cleaning up the container..."
+    docker exec -it hadoop-master bash -c "rm -f /root/dataset.csv" >> $LOGFILE 2>&1
+    docker exec -it hadoop-master bash -c "rm -f /root/finalproject.jar" >> $LOGFILE 2>&1
+
+    log_message "Copying JAR and dataset files to container..."
+    docker cp target/*.jar hadoop-master:/root/finalproject.jar >> $LOGFILE 2>&1
+    docker cp src/main/resources/dataset/london_merged.csv hadoop-master:/root/dataset.csv >> $LOGFILE 2>&1
 
     if [ $? -eq 0 ]; then
         log_message "Deployment successful."
     else
-        log_message "Error during deployment. Check the log file for details."
+        error_message "Error during deployment. Check the log file for details."
     fi
 }
 
