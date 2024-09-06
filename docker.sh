@@ -52,6 +52,8 @@ start() {
         docker run -itd -p 8041:8042 --net=hadoop --name hadoop-worker2 --hostname hadoop-worker2 >> $LOGFILE 2>&1
     fi
 
+    docker exec -it hadoop-master bash -c "/root/start-hadoop.sh" >> $LOGFILE 2>&1
+
     if [ $? -eq 0 ]; then
         log_message "Hadoop cluster started successfully."
     else

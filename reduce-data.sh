@@ -30,19 +30,6 @@ error_message() {
   printf "\033[0;31m%s\033[0m\n" "$log_entry" | tee -a $LOGFILE
 }
 
-start_hadoop() {
-  log_message "Starting Hadoop cluster..."
-
-  # Pull the Docker image
-  docker exec -it hadoop-master bash -c "/root/start-hadoop.sh" >> $LOGFILE 2>&1
-
-  if [ $? -eq 0 ]; then
-    log_message "Hadoop cluster started successfully."
-  else
-    error_message "Error starting Hadoop cluster. Check the log file for details."
-  fi
-}
-
 clean_folders(){
   log_message "Cleaning folders..."
 
@@ -92,7 +79,7 @@ run_spark_job() {
   log_message "Running Spark job $class_name..."
 
   # Run the Spark job
-  docker exec -it hadoop-master bash -c "spark-submit --class fr.esiea.bigdata.spark.bike.$class_name --master yarn --deploy-mode cluster --executor-memory 1g --num-executors 2 /root/finalproject.jar dataset.csv output/$class_name" >> $LOGFILE 2>&1
+  docker exec -it hadoop-master bash -c "spark-submit --class fr.esiea.bigdata.spark.bike.$class_name --master yarn --deploy-mode cluster /root/finalproject.jar dataset.csv output/$class_name" >> $LOGFILE 2>&1
 
   if [ $? -eq 0 ]; then
     log_message "Spark job $class_name completed successfully."
@@ -127,11 +114,9 @@ run_spark_jobs() {
 
 log_message "Reducing data..."
 
-start_hadoop
-
 clean_folders
 
-# Create HDFS directories
+  # Create HDFS directories
 create_hdfs_directories
 
 # Copy the dataset to HDFS
