@@ -47,9 +47,9 @@ start() {
         docker run -itd -p 8041:8042 --net=hadoop --name hadoop-worker2 --hostname hadoop-worker2 --platform linux/amd64 madjidtaoualit/hadoop-cluster:latest >> $LOGFILE 2>&1
     else
         log_message "macOS with Apple Silicon not detected."
-        docker run -itd --net=hadoop -p 9870:9870 -p 8088:8088 -p 7077:7077 -p 16010:16010 --name hadoop-master --hostname hadoop-master >> $LOGFILE 2>&1
-        docker run -itd -p 8040:8042 --net=hadoop --name hadoop-worker1 --hostname hadoop-worker1 >> $LOGFILE 2>&1
-        docker run -itd -p 8041:8042 --net=hadoop --name hadoop-worker2 --hostname hadoop-worker2 >> $LOGFILE 2>&1
+        docker run -itd --net=hadoop -p 9870:9870 -p 8088:8088 -p 7077:7077 -p 16010:16010 --name hadoop-master --hostname hadoop-master madjidtaoualit/hadoop-cluster:latest >> $LOGFILE 2>&1
+        docker run -itd -p 8040:8042 --net=hadoop --name hadoop-worker1 --hostname hadoop-worker1 madjidtaoualit/hadoop-cluster:latest >> $LOGFILE 2>&1
+        docker run -itd -p 8041:8042 --net=hadoop --name hadoop-worker2 --hostname hadoop-worker2 madjidtaoualit/hadoop-cluster:latest >> $LOGFILE 2>&1
     fi
 
     docker exec -it hadoop-master bash -c "/root/start-hadoop.sh" >> $LOGFILE 2>&1
