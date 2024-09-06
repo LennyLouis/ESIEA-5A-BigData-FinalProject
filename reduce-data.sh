@@ -87,25 +87,12 @@ copy_dataset() {
   fi
 }
 
-copy_jar_file() {
-  log_message "Copying JAR file to HDFS..."
-
-  # Copy the JAR file to HDFS
-  docker exec -it hadoop-master bash -c "hdfs dfs -put /root/finalproject.jar /user/root/finalproject.jar" >> $LOGFILE 2>&1
-
-  if [ $? -eq 0 ]; then
-    log_message "JAR file copied to HDFS successfully."
-  else
-    error_message "Error copying JAR file to HDFS. Check the log file for details."
-  fi
-}
-
 run_spark_job() {
   local class_name=$1
   log_message "Running Spark job $class_name..."
 
   # Run the Spark job
-  docker exec -it hadoop-master bash -c "spark-submit --class com.finalproject.$class_name --master yarn --deploy-mode cluster --executor-memory 1g --num-executors 2 /user/root/finalproject.jar" >> $LOGFILE 2>&1
+  docker exec -it hadoop-master bash -c "spark-submit --class fr.esiea.bigdata.spark.bike.$class_name --master yarn --deploy-mode cluster --executor-memory 1g --num-executors 2 /root/finalproject.jar dataset.csv output/$class_name" >> $LOGFILE 2>&1
 
   if [ $? -eq 0 ]; then
     log_message "Spark job $class_name completed successfully."
@@ -149,9 +136,6 @@ create_hdfs_directories
 
 # Copy the dataset to HDFS
 copy_dataset
-
-# Copy the JAR file to HDFS
-copy_jar_file
 
 # Run the Spark jobs
 run_spark_jobs
