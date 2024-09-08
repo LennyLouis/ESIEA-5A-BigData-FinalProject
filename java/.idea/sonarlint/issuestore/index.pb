@@ -7,10 +7,6 @@
 :
 
 Dockerfile,6/6/6651ddff6eb82c840ced7c1dddee15c6e1913dd4
-m
-=src/main/java/fr/esiea/bigdata/spark/batch/WordCountTask.java,0/7/07f46ee8c0836f0dd7f35cca76f85d509e60747e
-f
-6src/main/java/fr/esiea/bigdata/spark/batch/Stream.java,b/5/b51d151926ecb8dcda39eaf6736e8bf5f7f6d2e1
 o
 ?src/main/java/fr/esiea/bigdata/spark/bike/BikeCountPerHour.java,6/d/6db064c4a0f94b2fd6a68951bb938247b287c791
 v
