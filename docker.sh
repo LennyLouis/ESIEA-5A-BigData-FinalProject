@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOGFILE="./logs/reduce-data.log"
+LOGFILE="./logs/docker.log"
 
 # Function to log messages with timestamp
 log_message() {
@@ -110,8 +110,14 @@ deploy() {
         exit 1
     fi
 
+    cd ..
+
+    # Créer le répertoire output s'il n'existe pas
+    mkdir -p output
+
     log_message "Running Docker container..."
-    docker run --rm -v $(pwd)/output:/app/target spark-compiler >> $LOGFILE 2>&1
+    # Monter un volume pour récupérer les fichiers de sortie depuis /app/output dans le conteneur
+    docker run --rm -v $(pwd)/output:/app/output spark-compiler >> $LOGFILE 2>&1
     if [ $? -ne 0 ]; then
         error_message "Error during Docker run. Check the log file for details."
         exit 1
