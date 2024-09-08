@@ -133,7 +133,7 @@ deploy() {
 
     log_message "Copying JAR and dataset files to container..."
     docker cp output/*.jar hadoop-master:/root/finalproject.jar >> $LOGFILE 2>&1
-    docker cp src/main/resources/dataset/london_merged.csv hadoop-master:/root/dataset.csv >> $LOGFILE 2>&1
+    docker cp java/src/main/resources/dataset/london_merged.csv hadoop-master:/root/dataset.csv >> $LOGFILE 2>&1
     if [ $? -ne 0 ]; then
         error_message "Error during file copying. Check the log file for details."
         exit 1
