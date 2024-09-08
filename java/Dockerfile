@@ -1,19 +1,17 @@
-# Utilise une image de base pour Maven et Java
-FROM maven:3.8.5-openjdk-17 AS build
+# Étape 1 : Utiliser une image de base Java avec Maven
+FROM maven:3.8.5-openjdk-11 as build
 
-# Définir le répertoire de travail
+# Étape 2 : Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Copier les fichiers pom.xml et télécharger les dépendances
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+# Étape 3 : Copier les fichiers du projet dans le conteneur
+COPY . /app
 
-# Copier tout le code source et construire le projet
-COPY src /app/src
-RUN mvn package -DskipTests
+# Étape 4 : Compiler le projet Java avec Maven
+RUN mvn clean package
 
-# Créer un dossier pour le build
-RUN mkdir /build
+# Étape 5 : Créer un répertoire temporaire pour stocker le JAR compilé
+RUN mkdir -p /app/output
 
-# Copier le jar généré dans le dossier build
-RUN cp target/*.jar /build/
+# Étape 6 : Définir une commande d'exécution pour copier le JAR
+ENTRYPOINT [ "bash", "-c", "cp /app/target/*.jar /app/output/" ]
