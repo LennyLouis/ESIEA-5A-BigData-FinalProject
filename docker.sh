@@ -99,22 +99,41 @@ deploy() {
     start
     log_message "Deploying Java & Frontend..."
 
+    # Se déplacer dans le répertoire java
     cd java || (error_message "Error changing directory to java. Check the log file for details. Exit." && exit 1)
-    mvn clean package
+
+    # Forcer le rebuild en invalidant le cache à chaque build
+    log_message "Building Docker image..."
+    docker build --no-cache -t spark-compiler . >> $LOGFILE 2>&1
+    if [ $? -ne 0 ]; then
+        error_message "Error during Docker build. Check the log file for details."
+        exit 1
+    fi
+
+    log_message "Running Docker container..."
+    docker run --rm -v $(pwd)/output:/app/target spark-compiler >> $LOGFILE 2>&1
+    if [ $? -ne 0 ]; then
+        error_message "Error during Docker run. Check the log file for details."
+        exit 1
+    fi
 
     log_message "Cleaning up the container..."
     docker exec -it hadoop-master bash -c "rm -f /root/dataset.csv" >> $LOGFILE 2>&1
     docker exec -it hadoop-master bash -c "rm -f /root/finalproject.jar" >> $LOGFILE 2>&1
+    if [ $? -ne 0 ]; then
+        error_message "Error during cleanup. Check the log file for details."
+        exit 1
+    fi
 
     log_message "Copying JAR and dataset files to container..."
-    docker cp target/*.jar hadoop-master:/root/finalproject.jar >> $LOGFILE 2>&1
+    docker cp output/*.jar hadoop-master:/root/finalproject.jar >> $LOGFILE 2>&1
     docker cp src/main/resources/dataset/london_merged.csv hadoop-master:/root/dataset.csv >> $LOGFILE 2>&1
-
-    if [ $? -eq 0 ]; then
-        log_message "Deployment successful."
-    else
-        error_message "Error during deployment. Check the log file for details."
+    if [ $? -ne 0 ]; then
+        error_message "Error during file copying. Check the log file for details."
+        exit 1
     fi
+
+    log_message "Deployment successful."
 }
 
 case "$1" in
