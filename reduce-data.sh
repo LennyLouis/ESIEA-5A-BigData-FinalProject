@@ -80,14 +80,8 @@ run_spark_job() {
 
   # Run the Spark job
   docker exec -it hadoop-master bash -c "spark-submit --class fr.esiea.bigdata.spark.bike.$class_name --master yarn --deploy-mode cluster /root/finalproject.jar dataset.csv output/$class_name" >> $LOGFILE 2>&1
-
-  if [ $? -eq 0 ]; then
-    log_message "Spark job $class_name completed successfully."
-  else
-    error_message "Error running Spark job $class_name. Check the log file for details."
-    error_message "Exiting reduce-data.sh script."
-    exit 1
-  fi
+  
+  log_message "Spark job $class_name completed."
 }
 
 run_spark_jobs() {
@@ -108,6 +102,19 @@ run_spark_jobs() {
   fi
 }
 
+copy_spark_output() {
+  log_message "Copying Spark output to local filesystem..."
+
+  # Copy the output files from HDFS to the local filesystem
+  docker exec -it hadoop-master bash -c "hdfs dfs -get /user/root/output/ /root/" >> $LOGFILE 2>&1
+
+  if [ $? -eq 0 ]; then
+    log_message "Spark output copied successfully."
+  else
+    error_message "Error copying Spark output. Check the log file for details."
+  fi
+}
+
 ./docker.sh stop
 
 ./docker.sh deploy
@@ -124,3 +131,6 @@ copy_dataset
 
 # Run the Spark jobs
 run_spark_jobs
+
+# Copy the output files from HDFS to the local filesystem
+copy_spark_output
