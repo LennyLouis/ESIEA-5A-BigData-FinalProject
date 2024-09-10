@@ -33,7 +33,7 @@ services:
     command: ["tail", "-f", "/dev/null"]
   hadoop-master:
     image: madjidtaoualit/hadoop-cluster:latest
-    platform: linux/amd64  # Forcer l'architecture
+    platform: linux/amd64
     container_name: hadoop-master
     hostname: hadoop-master
     networks:
